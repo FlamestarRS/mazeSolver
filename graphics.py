@@ -1,6 +1,7 @@
 from __future__ import annotations
 from tkinter import Tk, BOTH, Canvas
-
+from time import sleep
+from constants import SCREEN_HEIGHT, SCREEN_WIDTH
 
 class Window:
     def __init__(self, width, height):
@@ -44,23 +45,19 @@ class Line:
             )
         
 class Cell:
-    def __init__(self, win: Window):
+    def __init__(self, p1: Point, p2: Point, win: Window):
         self.N_wall = True
         self.S_wall = True
         self.E_wall = True
         self.W_wall = True
-        self.__x1 = -1
-        self.__x2 = -1
-        self.__y1 = -1
-        self.__y2 = -1
-        self.__win = win
-
-    def draw(self, p1: Point, p2: Point, color="black"):
         self.__x1 = p1.x
         self.__x2 = p2.x
         self.__y1 = p1.y
         self.__y2 = p2.y
+        self.__win = win
 
+    def draw(self, color="black"):
+        
         self.auto_correct()
 
         n = Line(Point(self.__x1, self.__y1), Point(self.__x2, self.__y1))
@@ -87,3 +84,41 @@ class Cell:
         dest_center = Point(((to_cell.__x1 + to_cell.__x2) / 2), ((to_cell.__y1 + to_cell.__y2) / 2))
         color = "gray" if undo else "red"
         self.__win.draw_line(Line(center, dest_center), color)
+
+
+class Maze:
+    def __init__(
+        self,
+        num_rows,
+        num_cols,
+        cell_size_x,
+        cell_size_y,
+        win,
+    ):
+        self.__num_rows = num_rows
+        self.__num_cols = num_cols
+        self.__cell_size_x = cell_size_x
+        self.__cell_size_y = cell_size_y
+        self.__win = win
+        self.__cells = []
+        self.__create_cells()
+
+    def __create_cells(self):
+        starting_x_pos = (SCREEN_WIDTH - self.__num_cols * self.__cell_size_x) / 2
+        starting_y_pos = (SCREEN_HEIGHT - self.__num_rows * self.__cell_size_y) / 2
+        for i in range(self.__num_rows):
+            row = []
+            for j in range(self.__num_cols):
+                nw_point = Point(starting_x_pos + (j*self.__cell_size_x), starting_y_pos + (i*self.__cell_size_y))
+                se_point = Point(starting_x_pos + ((j+1)*self.__cell_size_x), starting_y_pos + ((i+1)*self.__cell_size_y))
+                cell = Cell(nw_point, se_point, self.__win)
+                row.append(cell)
+                cell.draw()
+                self.__animate()
+                
+            self.__cells.append(row)
+    
+    def __animate(self):
+        self.__win.redraw()
+        sleep(.002)
+            
