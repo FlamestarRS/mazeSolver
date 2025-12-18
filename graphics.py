@@ -45,7 +45,7 @@ class Line:
             )
         
 class Cell:
-    def __init__(self, p1: Point, p2: Point, win: Window):
+    def __init__(self, p1: Point, p2: Point, win: Window | None = None):
         self.N_wall = True
         self.S_wall = True
         self.E_wall = True
@@ -64,6 +64,8 @@ class Cell:
         s = Line(Point(self.__x1, self.__y2), Point(self.__x2, self.__y2))
         e = Line(Point(self.__x2, self.__y1), Point(self.__x2, self.__y2))
         w = Line(Point(self.__x1, self.__y1), Point(self.__x1, self.__y2))
+        if self.__win == None:
+            return
         if self.N_wall:
             self.__win.draw_line(n, color)
         if self.S_wall:
@@ -80,6 +82,8 @@ class Cell:
              self.__y1, self.__y2 = self.__y2, self.__y1
 
     def draw_move(self, to_cell: Cell, undo=False):
+        if self.__win == None:
+            return
         center = Point(((self.__x1 + self.__x2) / 2), ((self.__y1 + self.__y2) / 2))
         dest_center = Point(((to_cell.__x1 + to_cell.__x2) / 2), ((to_cell.__y1 + to_cell.__y2) / 2))
         color = "gray" if undo else "red"
@@ -93,7 +97,7 @@ class Maze:
         num_cols,
         cell_size_x,
         cell_size_y,
-        win,
+        win=None,
     ):
         self.__num_rows = num_rows
         self.__num_cols = num_cols
@@ -113,8 +117,9 @@ class Maze:
                 se_point = Point(starting_x_pos + ((j+1)*self.__cell_size_x), starting_y_pos + ((i+1)*self.__cell_size_y))
                 cell = Cell(nw_point, se_point, self.__win)
                 row.append(cell)
-                cell.draw()
-                self.__animate()
+                if self.__win != None:
+                    cell.draw()
+                    self.__animate()
                 
             self.__cells.append(row)
     
