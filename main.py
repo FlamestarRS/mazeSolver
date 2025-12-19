@@ -7,6 +7,7 @@ def main():
     row_width = 10
     col_width = 10
     maze = Maze(rows, cols, row_width, col_width, win)
+    maze._Maze__break_enterance_and_exit()
     win.wait_for_close()
 
 

@@ -68,12 +68,20 @@ class Cell:
             return
         if self.N_wall:
             self.__win.draw_line(n, color)
+        else:
+            self.__win.draw_line(n, "white")
         if self.S_wall:
             self.__win.draw_line(s, color)
+        else:
+            self.__win.draw_line(s, "white")
         if self.E_wall:
             self.__win.draw_line(e, color)
+        else:
+            self.__win.draw_line(e, "white")
         if self.W_wall:
             self.__win.draw_line(w, color)
+        else:
+            self.__win.draw_line(w, "white")
 
     def auto_correct(self): # ensures cell walls are constructed based on NW and SE points
         if self.__x1 > self.__x2:  
@@ -127,3 +135,8 @@ class Maze:
         self.__win.redraw()
         sleep(.002)
             
+    def __break_enterance_and_exit(self):
+        self.__cells[0][0].N_wall = False
+        self.__cells[-1][-1].S_wall = False
+        self.__cells[0][0].draw()
+        self.__cells[-1][-1].draw()
