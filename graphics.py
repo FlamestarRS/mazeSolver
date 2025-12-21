@@ -2,6 +2,7 @@ from __future__ import annotations
 from tkinter import Tk, BOTH, Canvas
 from time import sleep
 from constants import SCREEN_HEIGHT, SCREEN_WIDTH
+import random
 
 class Window:
     def __init__(self, width, height):
@@ -50,6 +51,7 @@ class Cell:
         self.S_wall = True
         self.E_wall = True
         self.W_wall = True
+        self.visited = False
         self.__x1 = p1.x
         self.__x2 = p2.x
         self.__y1 = p1.y
@@ -69,19 +71,19 @@ class Cell:
         if self.N_wall:
             self.__win.draw_line(n, color)
         else:
-            self.__win.draw_line(n, "white")
+            self.__win.draw_line(n, "#d9d9d9")
         if self.S_wall:
             self.__win.draw_line(s, color)
         else:
-            self.__win.draw_line(s, "white")
+            self.__win.draw_line(s, "#d9d9d9")
         if self.E_wall:
             self.__win.draw_line(e, color)
         else:
-            self.__win.draw_line(e, "white")
+            self.__win.draw_line(e, "#d9d9d9")
         if self.W_wall:
             self.__win.draw_line(w, color)
         else:
-            self.__win.draw_line(w, "white")
+            self.__win.draw_line(w, "#d9d9d9")
 
     def auto_correct(self): # ensures cell walls are constructed based on NW and SE points
         if self.__x1 > self.__x2:  
@@ -106,6 +108,7 @@ class Maze:
         cell_size_x,
         cell_size_y,
         win=None,
+        seed=None,
     ):
         self.__num_rows = num_rows
         self.__num_cols = num_cols
@@ -114,6 +117,8 @@ class Maze:
         self.__win = win
         self.__cells = []
         self.__create_cells()
+        if seed != None:
+            random.seed(seed)
 
     def __create_cells(self):
         starting_x_pos = (SCREEN_WIDTH - self.__num_cols * self.__cell_size_x) / 2
@@ -140,3 +145,63 @@ class Maze:
         self.__cells[-1][-1].S_wall = False
         self.__cells[0][0].draw()
         self.__cells[-1][-1].draw()
+
+    def __break_walls_r(self, i, j):
+        self.__cells[i][j].visited = True
+        
+        while True:
+            neighbors = {}
+
+            if i + 1 < len(self.__cells):
+                neighbors['S'] = self.__cells[i+1][j]
+
+            if i - 1 >= 0:
+                neighbors['N'] = self.__cells[i-1][j]
+
+            if j + 1 < len(self.__cells[i]):
+                neighbors['E'] = self.__cells[i][j+1]
+
+            if j - 1 >= 0:
+                neighbors['W'] = self.__cells[i][j-1]
+
+            to_visit = {}
+            for direction, cell in neighbors.items():
+                if cell.visited:
+                    continue
+                to_visit[direction] = cell
+
+            if len(to_visit) == 0:
+                self.__cells[i][j].draw()
+                return
+            
+            direction = random.choice(list(to_visit))
+            match direction:
+                case 'N':
+                    self.__cells[i][j].N_wall = False
+                    self.__cells[i-1][j].S_wall = False
+                    self.__cells[i][j].draw()
+                    self.__cells[i-1][j].draw()
+                    self.__break_walls_r(i-1, j)
+                case 'S':
+                    self.__cells[i][j].S_wall = False
+                    self.__cells[i+1][j].N_wall = False
+                    self.__cells[i][j].draw()
+                    self.__cells[i+1][j].draw()
+                    self.__break_walls_r(i+1, j)
+                case 'E':
+                    self.__cells[i][j].E_wall = False
+                    self.__cells[i][j+1].W_wall = False
+                    self.__cells[i][j].draw()
+                    self.__cells[i][j+1].draw()
+                    self.__break_walls_r(i, j+1)
+                case 'W':
+                    self.__cells[i][j].W_wall = False
+                    self.__cells[i][j-1].E_wall = False
+                    self.__cells[i][j].draw()
+                    self.__cells[i][j-1].draw()
+                    self.__break_walls_r(i, j-1)
+              
+    def __reset_cells_visited(self):
+        for row in self.__cells:
+            for cell in row:
+                cell.visited = False
