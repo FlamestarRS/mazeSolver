@@ -8,9 +8,7 @@ def main():
     col_width = 20
     seed = 0
     maze = Maze(rows, cols, row_width, col_width, win)
-    maze._Maze__break_enterance_and_exit()
-    maze._Maze__break_walls_r(0, 0)
-    maze._Maze__reset_cells_visited()
+    maze.solve()
     win.wait_for_close()
 
 

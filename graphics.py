@@ -1,7 +1,7 @@
 from __future__ import annotations
 from tkinter import Tk, BOTH, Canvas
 from time import sleep
-from constants import SCREEN_HEIGHT, SCREEN_WIDTH
+from constants import SCREEN_HEIGHT, SCREEN_WIDTH, INTERVAL
 import random
 
 class Window:
@@ -120,6 +120,10 @@ class Maze:
         if seed != None:
             random.seed(seed)
 
+        self.__break_enterance_and_exit()
+        self.__break_walls_r(0, 0)
+        self.__reset_cells_visited()
+
     def __create_cells(self):
         starting_x_pos = (SCREEN_WIDTH - self.__num_cols * self.__cell_size_x) / 2
         starting_y_pos = (SCREEN_HEIGHT - self.__num_rows * self.__cell_size_y) / 2
@@ -138,7 +142,7 @@ class Maze:
     
     def __animate(self):
         self.__win.redraw()
-        sleep(.002)
+        sleep(INTERVAL)
             
     def __break_enterance_and_exit(self):
         self.__cells[0][0].N_wall = False
@@ -205,3 +209,40 @@ class Maze:
         for row in self.__cells:
             for cell in row:
                 cell.visited = False
+
+    def __solve_r(self, i=0, j=0):
+        self.__animate()
+        self.__cells[i][j].visited = True
+
+        if self.__cells[i][j] == self.__cells[-1][-1]:
+            return True
+
+        neighbors = []
+
+        if i + 1 < len(self.__cells): # does south cell exist and new/accessible
+            if not self.__cells[i+1][j].visited and not self.__cells[i][j].S_wall:
+                neighbors.append((i+1, j))
+
+        if i - 1 >= 0: # does north cell exist and new/accessible
+            if not self.__cells[i-1][j].visited and not self.__cells[i][j].N_wall:
+                neighbors.append((i-1, j))
+
+        if j + 1 < len(self.__cells[i]): # does east cell exist and new/accessible
+            if not self.__cells[i][j+1].visited and not self.__cells[i][j].E_wall:
+                neighbors.append((i, j+1))
+
+        if j - 1 >= 0: # does west cell exist and new/accessible
+            if not self.__cells[i][j-1].visited and not self.__cells[i][j].W_wall:
+                neighbors.append((i, j-1))
+
+        for row, col in neighbors:
+            self.__cells[i][j].draw_move(self.__cells[row][col])
+            if self.__solve_r(row, col):
+                return True
+            else:
+                self.__cells[i][j].draw_move(self.__cells[row][col], True)
+
+        return False
+
+    def solve(self):
+        return self.__solve_r()
